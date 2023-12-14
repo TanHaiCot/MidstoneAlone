@@ -1,25 +1,25 @@
-#include "PlayerHealth.h"
+#include "PlayerHealth&Coin.h"
 
-PlayerHealth::PlayerHealth()
+PlayerHealthCoin::PlayerHealthCoin()
 {
 	number - 0;
 }
 
 
-PlayerHealth::~PlayerHealth()
+PlayerHealthCoin::~PlayerHealthCoin()
 {
 
 }
 
 
-void PlayerHealth::AddPos(const int& xPos)
+void PlayerHealthCoin::AddPos(const int& xPos)
 {
 	posList.push_back(xPos);
 
 }
 
 
-void PlayerHealth::Init(SDL_Renderer* screen)
+void PlayerHealthCoin::Init(SDL_Renderer* screen)
 {
 	loadImage("textures/player_pw.png", screen);
 	number = 3; 
@@ -34,7 +34,7 @@ void PlayerHealth::Init(SDL_Renderer* screen)
 }
 
 
-void PlayerHealth::Show(SDL_Renderer* screen)
+void PlayerHealthCoin::Show(SDL_Renderer* screen)
 {
 	for (int i = 0; i < posList.size(); i++)
 	{
@@ -45,14 +45,14 @@ void PlayerHealth::Show(SDL_Renderer* screen)
 }
 
 
-void PlayerHealth::Decrease()
+void PlayerHealthCoin::Decrease()
 {
 	number--; 
 	posList.pop_back(); 
 }
 
 
-void PlayerHealth::Increase()
+void PlayerHealthCoin::Increase()
 {
 	number++; 
 	int lastPos = posList.back();

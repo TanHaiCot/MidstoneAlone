@@ -1,16 +1,16 @@
 #pragma once
 
-#ifndef PlAYER_HEALTH_H
-#define PLAYER_HEALTH_H
+#ifndef PlAYER_HEALTH_COIN_H
+#define PLAYER_HEALTH_COIN_H
 
 #include "CommonFunctions.h"
 #include "BaseObjects.h"
 
-class PlayerHealth : public BaseObjects
+class PlayerHealthCoin : public BaseObjects
 {
 public:
-	PlayerHealth();
-	~PlayerHealth(); 
+	PlayerHealthCoin();
+	~PlayerHealthCoin();
 
 	void SetNumber(const int& num) { number = num; }
 	void AddPos(const int& xPos); 
