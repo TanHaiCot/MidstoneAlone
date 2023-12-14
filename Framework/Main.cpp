@@ -232,7 +232,7 @@ int main(int argc, char* argv[])
 				if (Collision1 || Collision2)
 				{
 					DieTurn++;
-					if (DieTurn < +3)
+					if (DieTurn <= 3)
 					{
 						player.SetRect(0, 0);
 						player.SetReviveTime(60);
