@@ -6,7 +6,7 @@
 #include "Timer.h"
 #include "Enemy.h"
 #include "Text.h"
-#include "PlayerHealth.h"
+#include "PlayerHealth&Coin.h"
 
 BaseObjects background; 
 TTF_Font* font = nullptr; 
@@ -153,6 +153,9 @@ int main(int argc, char* argv[])
 	PlayerHealth playerHealth; 
 	playerHealth.Init(screen);
 
+	PlayerCoin playerCoin; 
+	playerCoin.Init(screen); 
+
 	std::vector<Enemy*> EnemyArmy = Enemies(); 
 
 	int DieTurn = 0; 
@@ -197,6 +200,9 @@ int main(int argc, char* argv[])
 		gameMap.drawMap(screen);
 
 		playerHealth.Show(screen);
+
+		playerCoin.Show(screen); 
+		playerCoin.SetPos(SCREEN_WIDTH * 0.5 - 300, 8);
 
 		for (int i = 0; i < EnemyArmy.size(); i++)
 		{

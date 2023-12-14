@@ -1,25 +1,25 @@
 #include "PlayerHealth&Coin.h"
 
-PlayerHealthCoin::PlayerHealthCoin()
+PlayerHealth::PlayerHealth()
 {
 	number - 0;
 }
 
 
-PlayerHealthCoin::~PlayerHealthCoin()
+PlayerHealth::~PlayerHealth()
 {
 
 }
 
 
-void PlayerHealthCoin::AddPos(const int& xPos)
+void PlayerHealth::AddPos(const int& xPos)
 {
 	posList.push_back(xPos);
 
 }
 
 
-void PlayerHealthCoin::Init(SDL_Renderer* screen)
+void PlayerHealth::Init(SDL_Renderer* screen)
 {
 	loadImage("textures/player_pw.png", screen);
 	number = 3; 
@@ -34,7 +34,7 @@ void PlayerHealthCoin::Init(SDL_Renderer* screen)
 }
 
 
-void PlayerHealthCoin::Show(SDL_Renderer* screen)
+void PlayerHealth::Show(SDL_Renderer* screen)
 {
 	for (int i = 0; i < posList.size(); i++)
 	{
@@ -45,17 +45,45 @@ void PlayerHealthCoin::Show(SDL_Renderer* screen)
 }
 
 
-void PlayerHealthCoin::Decrease()
+void PlayerHealth::Decrease()
 {
 	number--; 
 	posList.pop_back(); 
 }
 
 
-void PlayerHealthCoin::Increase()
+void PlayerHealth::Increase()
 {
 	number++; 
 	int lastPos = posList.back();
 	lastPos += 40; 
 	posList.push_back(lastPos); 
+}
+
+
+
+PlayerCoin::PlayerCoin()
+{
+	xPOS = 0; 
+	yPOS = 0; 
+}
+
+
+PlayerCoin::~PlayerCoin()
+{
+
+}
+
+
+void PlayerCoin::Init(SDL_Renderer* screen)
+{
+	bool ret = loadImage("textures/money.png", screen);
+}
+
+
+void PlayerCoin::Show(SDL_Renderer* screen)
+{
+	rect.x = xPOS; 
+	rect.y = yPOS;
+	Render(screen); 
 }

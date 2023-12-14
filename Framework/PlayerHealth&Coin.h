@@ -6,11 +6,11 @@
 #include "CommonFunctions.h"
 #include "BaseObjects.h"
 
-class PlayerHealthCoin : public BaseObjects
+class PlayerHealth : public BaseObjects
 {
 public:
-	PlayerHealthCoin();
-	~PlayerHealthCoin();
+	PlayerHealth();
+	~PlayerHealth();
 
 	void SetNumber(const int& num) { number = num; }
 	void AddPos(const int& xPos); 
@@ -24,6 +24,22 @@ private:
 	int number; 
 	std::vector<int> posList; 
 
+};
+
+
+class PlayerCoin : public BaseObjects
+{
+public:
+	PlayerCoin();
+	~PlayerCoin(); 
+
+	void Init(SDL_Renderer* screen);
+	void Show(SDL_Renderer* screen);
+	void SetPos(const int& xpos, const int& ypos) { xPOS = xpos, yPOS = ypos; }
+
+private:
+	int xPOS; 
+	int yPOS; 
 };
 
 #endif 
