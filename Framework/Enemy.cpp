@@ -1,11 +1,11 @@
 #include "Enemy.h"
 
-Enemy::Enemy() 
+Enemy::Enemy()
 {
-    valX = 0;
-    valY = 0;
-    posX = 0;
-    posY = 0;
+	valX = 0;
+	valY = 0;
+	posX = 0;
+	posY = 0;
 	OnGround = false;
 	comebackTime = 0;
 	WidthFrame = 0;
@@ -14,8 +14,8 @@ Enemy::Enemy()
 
 	animationA = 0;
 	animationB = 0;
-	input.left = 0; 
-	moveType = STATIC_ENEMY; 
+	input.left = 0;
+	moveType = STATIC_ENEMY;
 }
 
 
@@ -26,13 +26,13 @@ Enemy::~Enemy()
 
 bool Enemy::LoadImg(std::string path, SDL_Renderer* screen)
 {
-	bool ret = BaseObjects::loadImage(path, screen); 
+	bool ret = BaseObjects::loadImage(path, screen);
 	if (ret == true)
 	{
-		WidthFrame = rect.w / ENEMY_FRAME_NUMBER; 
-		HeightFrame = rect.h; 
+		WidthFrame = rect.w / ENEMY_FRAME_NUMBER;
+		HeightFrame = rect.h;
 	}
-	return ret; 
+	return ret;
 }
 
 
@@ -51,45 +51,13 @@ void Enemy::SetClip()
 {
 	if (WidthFrame > 0 && HeightFrame > 0)
 	{
-		frameClip[0].x = 0;
-		frameClip[0].y = 0;
-		frameClip[0].w = WidthFrame;
-		frameClip[0].h = HeightFrame;
-
-		frameClip[1].x = WidthFrame;
-		frameClip[1].y = 0;
-		frameClip[1].w = WidthFrame;
-		frameClip[1].h = HeightFrame;
-
-		frameClip[2].x = 2 * WidthFrame;
-		frameClip[2].y = 0;
-		frameClip[2].w = WidthFrame;
-		frameClip[2].h = HeightFrame;
-
-		frameClip[3].x = 3 * WidthFrame;
-		frameClip[3].y = 0;
-		frameClip[3].w = WidthFrame;
-		frameClip[3].h = HeightFrame;
-
-		frameClip[4].x = 4 * WidthFrame;
-		frameClip[4].y = 0;
-		frameClip[4].w = WidthFrame;
-		frameClip[4].h = HeightFrame;
-
-		frameClip[5].x = 5 * WidthFrame;
-		frameClip[5].y = 0;
-		frameClip[5].w = WidthFrame;
-		frameClip[5].h = HeightFrame;
-
-		frameClip[6].x = 6 * WidthFrame;
-		frameClip[6].y = 0;
-		frameClip[6].w = WidthFrame;
-		frameClip[6].h = HeightFrame;
-
-		frameClip[7].x = 7 * WidthFrame;
-		frameClip[7].y = 0;
-		frameClip[7].w = WidthFrame;
-		frameClip[7].h = HeightFrame;
+		for (int i = 0; i < ENEMY_FRAME_NUMBER; i++)
+		{
+			frameClip[i].x = i * WidthFrame;
+			frameClip[i].y = 0;
+			frameClip[i].w = WidthFrame;
+			frameClip[i].h = HeightFrame;
+		}
 	}
 }
 
@@ -98,15 +66,15 @@ void Enemy::Show(SDL_Renderer* des)
 {
 	if (comebackTime == 0)
 	{
-		rect.x = posX - mapX; 
-		rect.y = posY - mapY; 
-		Frame++; 
-		if (Frame >= 0)
+		rect.x = posX - mapX;
+		rect.y = posY - mapY;
+		Frame++;
+		if (Frame >= ENEMY_FRAME_NUMBER) // FIXED
 		{
-			Frame = 0; 
+			Frame = 0;
 		}
 
-		SDL_Rect* currentClip = &frameClip[Frame]; 
+		SDL_Rect* currentClip = &frameClip[Frame];
 		SDL_Rect rendQuad = { rect.x, rect.y, WidthFrame, HeightFrame };
 		SDL_RenderCopy(des, object, currentClip, &rendQuad);
 	}
@@ -117,27 +85,27 @@ void Enemy::Action(Map& map)
 {
 	if (comebackTime == 0)
 	{
-		valX = 0; 
+		valX = 0;
 		valY += ENEMY_GRAVITY_SPEED;
 		if (valY >= ENEMY_MAX_FALL_SPEED)
 		{
-			valY = ENEMY_MAX_FALL_SPEED; 
+			valY = ENEMY_MAX_FALL_SPEED;
 		}
 
 		if (input.left == 1)
 		{
-			valX -= ENEMY_SPEED; 
+			valX -= ENEMY_SPEED;
 		}
 		else if (input.right == 1)
 		{
-			valX += ENEMY_SPEED; 
+			valX += ENEMY_SPEED;
 		}
 
-		CheckToMap(map); 
+		CheckToMap(map);
 	}
 	else if (comebackTime > 0)
 	{
-		comebackTime--; 
+		comebackTime--;
 		if (comebackTime == 0)
 		{
 			InitEnemy();
@@ -225,7 +193,7 @@ void Enemy::CheckToMap(Map& map)
 				posX = (x1 + 1) * TILE_SIZE;
 				valX = 0;
 			}
-			
+
 		}
 	}
 
@@ -257,7 +225,7 @@ void Enemy::CheckToMap(Map& map)
 		{
 			int val1 = map.tile[y1][x1];
 			int val2 = map.tile[y1][x2];
-			
+
 			if ((val1 != BLANK_TILE && val1 != COIN) || (val2 != BLANK_TILE && val2 != COIN))
 			{
 				posY = (y1 + 1) * TILE_SIZE;
@@ -297,9 +265,9 @@ void Enemy::ImpMoveType(SDL_Renderer* screen)
 		{
 			if (posX > animationB)
 			{
-				input.left = 1;		
-				input.right = 0; 
-				LoadImg("textures/threat_left.png", screen); 
+				input.left = 1;
+				input.right = 0;
+				LoadImg("textures/threat_left.png", screen);
 			}
 			else if (posX < animationA)
 			{
@@ -330,6 +298,11 @@ void Enemy::InitBullet(Bullet* bullet, SDL_Renderer* screen)
 		{
 			bullet->setIsMove(true);
 			bullet->setBulletDir(Bullet::LEFT_DIR);
+
+			// FIXED_BUG
+			rect.x = posX - mapX;
+			rect.y = posY - mapY;
+
 			bullet->SetRect(rect.x + 10, rect.y + 10);
 			bullet->setX(15);
 			BulletList.push_back(bullet);
@@ -342,7 +315,7 @@ void Enemy::CreateBullet(SDL_Renderer* screen, const int& xLimit, const int& yLi
 {
 	for (int i = 0; i < BulletList.size(); i++)
 	{
-		Bullet* bullet = BulletList.at(i); 
+		Bullet* bullet = BulletList.at(i);
 		if (bullet != nullptr)
 		{
 			if (bullet->getIsMove())
@@ -355,12 +328,17 @@ void Enemy::CreateBullet(SDL_Renderer* screen, const int& xLimit, const int& yLi
 				}
 				else
 				{
-					bullet->setIsMove(false); 
+					bullet->setIsMove(false);
 				}
 			}
 			else
 			{
-				bullet->setIsMove(true); 
+				bullet->setIsMove(true);
+
+				// FIXED_BUG
+				rect.x = posX - mapX;
+				rect.y = posY - mapY;
+
 				bullet->SetRect(rect.x + 10, rect.y + 10);
 			}
 		}

@@ -22,7 +22,7 @@ void PlayerHealth::AddPos(const int& xPos)
 void PlayerHealth::Init(SDL_Renderer* screen)
 {
 	loadImage("textures/player_pw.png", screen);
-	number = 3; 
+	number = 3;
 	if (posList.size() > 0)
 	{
 		posList.clear();
@@ -40,32 +40,32 @@ void PlayerHealth::Show(SDL_Renderer* screen)
 	{
 		rect.x = posList.at(i);
 		rect.y = 0;
-		Render(screen); 
+		Render(screen);
 	}
 }
 
 
 void PlayerHealth::Decrease()
 {
-	number--; 
-	posList.pop_back(); 
+	number--;
+	posList.pop_back();
 }
 
 
 void PlayerHealth::Increase()
 {
-	number++; 
+	number++;
 	int lastPos = posList.back();
-	lastPos += 40; 
-	posList.push_back(lastPos); 
+	lastPos += 40;
+	posList.push_back(lastPos);
 }
 
 
 
 PlayerCoin::PlayerCoin()
 {
-	xPOS = 0; 
-	yPOS = 0; 
+	xPOS = 0;
+	yPOS = 0;
 }
 
 
@@ -83,7 +83,7 @@ void PlayerCoin::Init(SDL_Renderer* screen)
 
 void PlayerCoin::Show(SDL_Renderer* screen)
 {
-	rect.x = xPOS; 
+	rect.x = xPOS;
 	rect.y = yPOS;
-	Render(screen); 
+	Render(screen);
 }

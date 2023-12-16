@@ -2,13 +2,13 @@
 
 Bullet::Bullet()
 {
-	xValue = 0; 
-	yValue = 0; 
-	isMove = false; 
-	bulletType = SPHERE_BULLET; 
+	xValue = 0;
+	yValue = 0;
+	isMove = false;
+	bulletType = SPHERE_BULLET;
 }
 
-Bullet::~Bullet() 
+Bullet::~Bullet()
 {
 }
 
@@ -36,20 +36,20 @@ void Bullet::HandleMove(const int& xBorder, const int& yBorder)
 		rect.y -= yValue;
 		if (rect.y < 0)
 		{
-			isMove = false; 
+			isMove = false;
 		}
 	}
 	else if (bulletDir == UP_RIGHT_DIR)
 	{
-		rect.x += xValue; 
+		rect.x += xValue;
 		if (rect.x > xBorder)
 		{
-			isMove = false; 
+			isMove = false;
 		}
-		rect.y -= yValue; 
+		rect.y -= yValue;
 		if (rect.y < 0)
 		{
-			isMove == false; 
+			isMove == false;
 		}
 	}
 	else if (bulletDir == UP_LEFT_DIR)
@@ -69,7 +69,7 @@ void Bullet::HandleMove(const int& xBorder, const int& yBorder)
 
 bool Bullet::LoadBulletImg(SDL_Renderer* des)
 {
-	bool ret = false; 
+	bool ret = false;
 	if (bulletType == WATER_SHAPE_BULLET)
 	{
 		ret = loadImage("textures/02.png", des);
@@ -79,5 +79,5 @@ bool Bullet::LoadBulletImg(SDL_Renderer* des)
 		ret = loadImage("textures/pellett.png", des);
 	}
 
-	return ret; 
+	return ret;
 }

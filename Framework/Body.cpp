@@ -4,10 +4,10 @@ Body::Body() {}
 
 Body::Body(Vec3 pos_, Vec3 vel_, Vec3 acc_,
 	float mass_, const char* textureFile_) {
-	pos = pos_; 
-	vel = vel_; 
+	pos = pos_;
+	vel = vel_;
 	acc = acc_;
-	mass = mass_; 
+	mass = mass_;
 	textureFile = textureFile_;
 }
 
@@ -61,7 +61,7 @@ void Body::Update(float deltaTime) {
 
 void Body::Update(char direction, float horzLimit, float verLimit)
 {
-	if (direction == 'L' && (pos.x - vel.x) >=0) {
+	if (direction == 'L' && (pos.x - vel.x) >= 0) {
 		pos.x -= vel.x;
 	}
 

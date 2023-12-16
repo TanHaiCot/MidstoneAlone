@@ -8,55 +8,55 @@
 #include "Text.h"
 #include "PlayerHealth&Coin.h"
 
-BaseObjects background; 
-TTF_Font* font = nullptr; 
+BaseObjects background;
+TTF_Font* font = nullptr;
 
 bool InitData()
 {
-	bool success = true; 
+	bool success = true;
 	int ret = SDL_Init(SDL_INIT_VIDEO);
 	if (ret < 0)
-		return false; 
+		return false;
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
-	window = SDL_CreateWindow("Midstone", 
-		                       SDL_WINDOWPOS_UNDEFINED,  
-		                       SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, 
-		                       SDL_WINDOW_SHOWN);
-	 
+	window = SDL_CreateWindow("Midstone",
+		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT,
+		SDL_WINDOW_SHOWN);
+
 	if (window == nullptr)
 	{
-		success = false; 
+		success = false;
 	}
 	else
 	{
 		screen = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 		if (screen == nullptr)
 		{
-			success = false; 
+			success = false;
 		}
 		else
 		{
 			SDL_SetRenderDrawColor(screen, RENDER_DRAW_COLOR, RENDER_DRAW_COLOR, RENDER_DRAW_COLOR, RENDER_DRAW_COLOR);
-			int imgFlags = IMG_INIT_PNG; 
+			int imgFlags = IMG_INIT_PNG;
 			if (!(IMG_Init(imgFlags) && imgFlags))
-				success = false; 
+				success = false;
 		}
 
 		if (TTF_Init() == -1)
 		{
-			success = false; 
+			success = false;
 		}
 
 		font = TTF_OpenFont("Font/dlxfont_.ttf", 15);
 		if (font == nullptr)
 		{
-			success = false; 
+			success = false;
 		}
 	}
 
-	return success; 
+	return success;
 }
 
 
@@ -64,9 +64,9 @@ bool LoadBackground()
 {
 	bool ret = background.loadImage("textures/Flat_Game_Background_1.jpg", screen);
 	if (ret == false)
-		return false; 
+		return false;
 
-	return true; 
+	return true;
 }
 
 
@@ -74,8 +74,8 @@ void Close()
 {
 	background.Free();
 
-	SDL_DestroyRenderer(screen); 
-	screen = nullptr; 
+	SDL_DestroyRenderer(screen);
+	screen = nullptr;
 
 	SDL_DestroyWindow(window);
 	window = nullptr;
@@ -89,26 +89,26 @@ std::vector<Enemy*> Enemies()
 {
 	std::vector<Enemy*> enemyArmy;
 
-	Enemy* dynamicEnemies = new Enemy[20]; 
+	Enemy* dynamicEnemies = new Enemy[20];
 	for (int i = 0; i < 20; i++)
 	{
-		Enemy* enemy = (dynamicEnemies + i); 
+		Enemy* enemy = (dynamicEnemies + i);
 		if (enemy != nullptr)
 		{
-			enemy->LoadImg("textures/threat_left.png", screen); 
-			enemy->SetClip(); 
-			enemy->SetMoveType(Enemy::MOVE_IN_AREA); 
-			enemy->setXpos(500 + i * 500); 
+			enemy->LoadImg("textures/threat_left.png", screen);
+			enemy->SetClip();
+			enemy->SetMoveType(Enemy::MOVE_IN_AREA);
+			enemy->setXpos(500 + i * 500);
 			enemy->setYpos(200);
 
-			int pos1 = enemy->getXpos() - 60; 
+			int pos1 = enemy->getXpos() - 60;
 			int pos2 = enemy->getXpos() + 60;
-			enemy->SetAnimationPos(pos1, pos2); 
+			enemy->SetAnimationPos(pos1, pos2);
 			enemy->SetInputLeft(1);
-			enemyArmy.push_back(enemy);		
+			enemyArmy.push_back(enemy);
 		}
 	}
-	Enemy* enemies = new Enemy[20]; 
+	Enemy* enemies = new Enemy[20];
 
 	for (int i = 0; i < 20; i++)
 	{
@@ -119,8 +119,8 @@ std::vector<Enemy*> Enemies()
 			enemy->SetClip();
 			enemy->setXpos(700 + i * 1200);
 			enemy->setYpos(250);
-			enemy->SetMoveType(Enemy::STATIC_ENEMY); 
-			enemy->SetInputLeft(0); 
+			enemy->SetMoveType(Enemy::STATIC_ENEMY);
+			enemy->SetInputLeft(0);
 
 			Bullet* bullet = new Bullet();
 			enemy->InitBullet(bullet, screen);
@@ -128,45 +128,45 @@ std::vector<Enemy*> Enemies()
 		}
 	}
 
-	return enemyArmy; 
+	return enemyArmy;
 }
 
 int main(int argc, char* argv[])
 {
-	Timer timer; 
+	Timer timer;
 	if (InitData() == false)
-		return -1; 
+		return -1;
 
 	if (LoadBackground() == false)
-		return -1; 
+		return -1;
 
 
-	GameMap gameMap; 
+	GameMap gameMap;
 	gameMap.loadMap("map/map01.dat");
-	gameMap.loadTiles(screen); 
+	gameMap.loadTiles(screen);
 
 
-	Player player; 
+	Player player;
 	player.loadImage("player sprite/player_right.png", screen);
 	player.setClip();
 
-	PlayerHealth playerHealth; 
+	PlayerHealth playerHealth;
 	playerHealth.Init(screen);
 
-	PlayerCoin playerCoin; 
-	playerCoin.Init(screen); 
+	PlayerCoin playerCoin;
+	playerCoin.Init(screen);
 
-	std::vector<Enemy*> EnemyArmy = Enemies(); 
+	std::vector<Enemy*> EnemyArmy = Enemies();
 
-	int DieTurn = 0; 
+	int DieTurn = 0;
 
 	//Time text
-	Text gameTime; 
-	gameTime.SetColor(Text::WHITE_TEXT); 
+	Text gameTime;
+	gameTime.SetColor(Text::WHITE_TEXT);
 
-	Text gameMark; 
+	Text gameMark;
 	gameMark.SetColor(Text::WHITE_TEXT);
-	UINT markValue = 0; 
+	UINT markValue = 0;
 
 	Text gameCoin;
 	gameCoin.SetColor(Text::WHITE_TEXT);
@@ -178,7 +178,7 @@ int main(int argc, char* argv[])
 		while (SDL_PollEvent(&event) != 0)
 		{
 			if (event.type == SDL_QUIT)
-				isQuit = true; 
+				isQuit = true;
 
 			player.HandleInputAction(event, screen);
 		}
@@ -186,22 +186,22 @@ int main(int argc, char* argv[])
 		SDL_SetRenderDrawColor(screen, RENDER_DRAW_COLOR, RENDER_DRAW_COLOR, RENDER_DRAW_COLOR, RENDER_DRAW_COLOR);
 		SDL_RenderClear(screen);
 
-		background.Render(screen, nullptr); 
+		background.Render(screen, nullptr);
 
-		Map mapData = gameMap.getMap(); 
+		Map mapData = gameMap.getMap();
 
 		player.HandleBullet(screen);
 		player.setMapXY(mapData.start_x, mapData.start_y);
-		player.Play(mapData); 
+		player.Play(mapData);
 		player.Show(screen);
 
 
-		gameMap.setMap(mapData); 
+		gameMap.setMap(mapData);
 		gameMap.drawMap(screen);
 
 		playerHealth.Show(screen);
 
-		playerCoin.Show(screen); 
+		playerCoin.Show(screen);
 		playerCoin.SetPos(SCREEN_WIDTH * 0.5 - 300, 8);
 
 		for (int i = 0; i < EnemyArmy.size(); i++)
@@ -209,13 +209,13 @@ int main(int argc, char* argv[])
 			Enemy* enemy = EnemyArmy.at(i);
 			if (enemy != nullptr)
 			{
-				enemy->SetMapXY(mapData.start_x, mapData.start_y); 
+				enemy->SetMapXY(mapData.start_x, mapData.start_y);
 				enemy->ImpMoveType(screen);
 				enemy->Action(mapData);
 				enemy->CreateBullet(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-				enemy->Show(screen); 
+				enemy->Show(screen);
 
-				SDL_Rect playerRect = player.GetRectFrame(); 
+				SDL_Rect playerRect = player.GetRectFrame();
 				bool Collision1 = false;
 				std::vector<Bullet*> Bullet_List = enemy->GetBulletList();
 				for (int b = 0; b < Bullet_List.size(); ++b)
@@ -223,7 +223,7 @@ int main(int argc, char* argv[])
 					Bullet* bullet = Bullet_List.at(b);
 					if (bullet)
 					{
-						Collision1 = SDLCommonFunctions::CheckCollision(bullet->GetRect(), playerRect); 
+						Collision1 = SDLCommonFunctions::CheckCollision(bullet->GetRect(), playerRect);
 						if (Collision1)
 						{
 							//enemy->RemoveBullet(b);
@@ -232,7 +232,7 @@ int main(int argc, char* argv[])
 					}
 				}
 
-				SDL_Rect enemyRect = enemy->GetRectFrame(); 
+				SDL_Rect enemyRect = enemy->GetRectFrame();
 				bool Collision2 = SDLCommonFunctions::CheckCollision(playerRect, enemyRect);
 
 				if (Collision1 || Collision2)
@@ -250,18 +250,18 @@ int main(int argc, char* argv[])
 					else
 					{
 						/*if (MessageBox(nullptr, L"GAME OVER", L"Info", MB_OK | MB_ICONSTOP) == IDOK)
-					    {
-						    enemy->Free();
-						    Close();
-						    SDL_Quit();
-						    return 0;
-					    }*/
+						{
+							enemy->Free();
+							Close();
+							SDL_Quit();
+							return 0;
+						}*/
 					}
 				}
 			}
 		}
 
-		std::vector<Bullet*> bulletMag = player.getBulletMag(); 
+		std::vector<Bullet*> bulletMag = player.getBulletMag();
 		for (int i = 0; i < bulletMag.size(); ++i)
 		{
 			Bullet* bullet = bulletMag.at(i);
@@ -269,24 +269,24 @@ int main(int argc, char* argv[])
 			{
 				for (int j = 0; j < EnemyArmy.size(); ++j)
 				{
-					Enemy* enemy = EnemyArmy.at(j); 
+					Enemy* enemy = EnemyArmy.at(j);
 					if (enemy != nullptr)
 					{
-						SDL_Rect eRect; 
-						eRect.x = enemy->GetRect().x; 
+						SDL_Rect eRect;
+						eRect.x = enemy->GetRect().x;
 						eRect.y = enemy->GetRect().y;
 						eRect.w = enemy->GetWidthFrame();
 						eRect.h = enemy->GetHeightFrame();
 
-						SDL_Rect bRect = bullet->GetRect(); 
+						SDL_Rect bRect = bullet->GetRect();
 
-						bool Collision = SDLCommonFunctions::CheckCollision(bRect, eRect); 
+						bool Collision = SDLCommonFunctions::CheckCollision(bRect, eRect);
 
 						if (Collision)
 						{
 							markValue += 100;
 							player.RemoveBullet(i);
-							enemy->Free(); 
+							enemy->Free();
 							EnemyArmy.erase(EnemyArmy.begin() + j);
 						}
 					}
@@ -296,8 +296,8 @@ int main(int argc, char* argv[])
 
 		//Show game time 
 		std::string stringTime = "Time: ";
-		Uint32 TimeValue = SDL_GetTicks() / 1000; 
-		Uint32 countdownTime = 300 - TimeValue; 
+		Uint32 TimeValue = SDL_GetTicks() / 1000;
+		Uint32 countdownTime = 300 - TimeValue;
 		if (countdownTime <= 0)
 		{
 			if (MessageBox(nullptr, L"GAME OVER", L"Info", MB_OK | MB_ICONSTOP) == IDOK)
@@ -325,22 +325,22 @@ int main(int argc, char* argv[])
 		gameMark.LoadFromRenderText(font, screen);
 		gameMark.RenderText(screen, SCREEN_WIDTH * 0.5 - 50, 15);
 
-		int coinCount = player.GetCoinCount(); 
-		std::string stringCoin = std::to_string(coinCount); 
+		int coinCount = player.GetCoinCount();
+		std::string stringCoin = std::to_string(coinCount);
 
 		gameCoin.SetText(stringCoin);
 		gameCoin.LoadFromRenderText(font, screen);
 		gameCoin.RenderText(screen, SCREEN_WIDTH * 0.5 - 250, 15);
 
-		SDL_RenderPresent(screen); 
+		SDL_RenderPresent(screen);
 
 		int realTime = timer.getTick();
 		int timePerFrame = 1000 / FRAME_PER_SECOND; //ms
 
 		if (realTime < timePerFrame)
 		{
-			int delayTime = timePerFrame - realTime; 
-			if(delayTime > 0)
+			int delayTime = timePerFrame - realTime;
+			if (delayTime > 0)
 				SDL_Delay(delayTime);
 		}
 	}
@@ -350,13 +350,13 @@ int main(int argc, char* argv[])
 		Enemy* enemy = EnemyArmy.at(i);
 		if (enemy)
 		{
-			enemy->Free(); 
+			enemy->Free();
 			enemy = nullptr;
 		}
 	}
 
-	EnemyArmy.clear(); 
+	EnemyArmy.clear();
 
-	Close(); 
-	return 0; 
+	Close();
+	return 0;
 }

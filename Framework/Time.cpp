@@ -8,7 +8,7 @@ Timer::Timer() {
 	currTicks = 0;
 	startTick = 0;
 	pausedTick = 0;
-	isStarted = false; 
+	isStarted = false;
 	isPaused = false;
 }
 
@@ -19,7 +19,7 @@ Timer::~Timer() {
 
 
 void Timer::Start() {
-	isStarted = true; 
+	isStarted = true;
 	isPaused = false;
 	startTick = SDL_GetTicks();
 }
@@ -27,8 +27,8 @@ void Timer::Start() {
 
 void Timer::Stop()
 {
-	isPaused = false; 
-	isStarted = false; 
+	isPaused = false;
+	isStarted = false;
 }
 
 
@@ -36,7 +36,7 @@ void Timer::Pause()
 {
 	if (isStarted == true && isPaused == false)
 	{
-		isPaused = true; 
+		isPaused = true;
 		pausedTick = SDL_GetTicks() - startTick; //current moment - passed time 
 	}
 }
@@ -46,9 +46,9 @@ void Timer::Unpause()
 {
 	if (isPaused = true)
 	{
-		isPaused = false; 
-		startTick = SDL_GetTicks() - pausedTick; 
-		pausedTick = 0; 
+		isPaused = false;
+		startTick = SDL_GetTicks() - pausedTick;
+		pausedTick = 0;
 	}
 }
 
@@ -59,11 +59,11 @@ int Timer::getTick()
 	{
 		if (isPaused == true)
 		{
-			return pausedTick; 
+			return pausedTick;
 		}
-		else { return SDL_GetTicks() - startTick;  }
+		else { return SDL_GetTicks() - startTick; }
 	}
-	return 0; 
+	return 0;
 }
 
 
@@ -75,7 +75,7 @@ bool Timer::isStart()
 
 bool Timer::isPause()
 {
-	return isPaused; 
+	return isPaused;
 }
 
 

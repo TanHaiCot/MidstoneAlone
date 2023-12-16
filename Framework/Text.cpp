@@ -5,7 +5,7 @@ Text::Text()
 	textColor.r = 255;
 	textColor.g = 255;
 	textColor.b = 255;
-	texture = nullptr; 
+	texture = nullptr;
 }
 
 
@@ -14,16 +14,16 @@ Text::~Text()
 }
 
 
-bool Text::LoadFromRenderText(TTF_Font* font, SDL_Renderer* screen) 
+bool Text::LoadFromRenderText(TTF_Font* font, SDL_Renderer* screen)
 {
-	SDL_Surface* TextSurface = TTF_RenderText_Solid(font, stringValue.c_str(), textColor); 
+	SDL_Surface* TextSurface = TTF_RenderText_Solid(font, stringValue.c_str(), textColor);
 	if (TextSurface)
 	{
 		texture = SDL_CreateTextureFromSurface(screen, TextSurface);
 		width = TextSurface->w;
-		height = TextSurface->h; 
+		height = TextSurface->h;
 
-		SDL_FreeSurface(TextSurface); 
+		SDL_FreeSurface(TextSurface);
 	}
 
 	return texture != nullptr;
@@ -35,7 +35,7 @@ void Text::Free()
 	if (texture != nullptr)
 	{
 		SDL_DestroyTexture(texture);
-		texture = nullptr; 
+		texture = nullptr;
 	}
 }
 
@@ -44,7 +44,7 @@ void Text::SetColor(Uint8 red, Uint8 green, Uint8 blue)
 {
 	textColor.r = red;
 	textColor.g = green;
-	textColor.b = blue; 
+	textColor.b = blue;
 }
 
 
@@ -69,9 +69,9 @@ void Text::SetColor(int type)
 
 
 void Text::RenderText(SDL_Renderer* screen,
-	                  int xPos, int yPos, SDL_Rect* clip /*= nullptr*/,
-	                  const double angle /*= 0.0*/, SDL_Point* center /*= nullptr*/,
-	                  SDL_RendererFlip flip /*= SDL_FLIP_NONE*/)
+	int xPos, int yPos, SDL_Rect* clip /*= nullptr*/,
+	const double angle /*= 0.0*/, SDL_Point* center /*= nullptr*/,
+	SDL_RendererFlip flip /*= SDL_FLIP_NONE*/)
 {
 	SDL_Rect RenderQuad = { xPos, yPos, width, height };
 	if (clip != nullptr)
@@ -80,5 +80,5 @@ void Text::RenderText(SDL_Renderer* screen,
 		RenderQuad.h = clip->h;
 	}
 
-	SDL_RenderCopyEx(screen, texture, &RenderQuad, nullptr, angle, center, flip); 
+	SDL_RenderCopyEx(screen, texture, &RenderQuad, nullptr, angle, center, flip);
 }

@@ -12,7 +12,7 @@ Window::Window(int width_, int height_, const char* name_) {
 bool Window::OnCreate() {
 	// The following is a typical chunk of code for initialization 
 	// a window in SDL
-	
+
 	// Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		std::cout << "SDL_Error: " << SDL_GetError() << std::endl;
@@ -20,7 +20,7 @@ bool Window::OnCreate() {
 	}
 
 	// Create the window
-	window = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, 
+	window = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
 
 	if (!window) {
