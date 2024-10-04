@@ -1,4 +1,17 @@
 #include "Enemy.h"
+//#include <memory>
+//#include <iostream>
+//
+//
+//void* operator new(std::size_t numBytes) {
+//	std::cout << "allocating " << numBytes << " bytes of memory\n";
+//	return std::malloc(numBytes);
+//}
+//
+//void operator delete(void* memoryLocation, std::size_t numBytes) {
+//	std::cout << "freeing " << numBytes << " bytes of memory\n";
+//	std::free(memoryLocation);
+//}
 
 Enemy::Enemy() 
 {
@@ -101,7 +114,7 @@ void Enemy::Show(SDL_Renderer* des)
 		rect.x = posX - mapX; 
 		rect.y = posY - mapY; 
 		Frame++; 
-		if (Frame >= 0)
+		if (Frame >= ENEMY_FRAME_NUMBER)
 		{
 			Frame = 0; 
 		}
@@ -330,6 +343,10 @@ void Enemy::InitBullet(Bullet* bullet, SDL_Renderer* screen)
 		{
 			bullet->setIsMove(true);
 			bullet->setBulletDir(Bullet::LEFT_DIR);
+
+			rect.x = posX - mapX;
+			rect.y = posY - mapY;
+
 			bullet->SetRect(rect.x + 10, rect.y + 10);
 			bullet->setX(15);
 			BulletList.push_back(bullet);

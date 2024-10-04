@@ -1,4 +1,3 @@
-
 #include "CommonFunctions.h"
 #include "BaseObjects.h"
 #include "Map.h"
@@ -7,6 +6,21 @@
 #include "Enemy.h"
 #include "Text.h"
 #include "PlayerHealth&Coin.h"
+#include <memory>
+#include <iostream>
+
+
+void* operator new(std::size_t numBytes) {
+	std::cout << "allocating " << numBytes << " bytes of memory\n";
+	return std::malloc(numBytes);
+}
+
+void operator delete(void* memoryLocation, std::size_t numBytes) {
+	std::cout << "freeing " << numBytes << " bytes of memory\n";
+	std::free(memoryLocation);
+}
+
+
 
 BaseObjects background; 
 TTF_Font* font = nullptr; 
@@ -133,6 +147,7 @@ std::vector<Enemy*> Enemies()
 
 int main(int argc, char* argv[])
 {
+
 	Timer timer; 
 	if (InitData() == false)
 		return -1; 

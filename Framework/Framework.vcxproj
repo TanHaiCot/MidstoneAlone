@@ -168,6 +168,7 @@
     <ClInclude Include="Map.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerHealth&amp;Coin.h" />
+    <ClInclude Include="PoolAllocator.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="Timer.h" />

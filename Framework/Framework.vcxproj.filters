@@ -116,6 +116,9 @@
     <ClInclude Include="PlayerHealth&amp;Coin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PoolAllocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.txt">
