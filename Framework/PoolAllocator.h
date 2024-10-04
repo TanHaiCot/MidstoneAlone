@@ -4,8 +4,6 @@
 #include <vector>
 #include <iostream>
 
-#define MAX_POOL_SIZE 100; 
-
 using namespace std; 
 
 template <typename T>
@@ -15,27 +13,31 @@ private:
 	size_t poolSize; 
 	T* memoryBlock; 
 	std::vector<T*> unusedBlocks; 
+    size_t MAX_POOL_SIZE = 100; 
 
 public:
-	PoolAllocator(size_t poolsize_) : poolSize(poolsize_); 
-	if (poolSize > MAX_POOL_SIZE)
+	PoolAllocator(size_t poolsize_) : poolSize(poolsize_)
 	{
-		poolSize = MAX_POOL_SIZE; 
-		cout << "Requested pool size(" << poolSize << ") exceeds max pool size (" << MAX_POOL_SIZE << ")" << endl;
-	}
+		if (poolSize > MAX_POOL_SIZE)
+		{
+			//cout << "Requested pool size(" << poolSize << ") exceeds max pool size (" << MAX_POOL_SIZE << ")" << endl;
+			poolSize = MAX_POOL_SIZE;
+		}
 
-	this->poolSize = poolSize; 
+		this->poolSize = poolSize;
 
-	memoryBlock = static_cast<T*>(malloc(sizeof(T) * poolSize)); 
-	if (!memoryBlock)
-	{
-		throw bad_alloc(); 
-	}
+		memoryBlock = static_cast<T*>(malloc(sizeof(T) * poolSize));
+		if (!memoryBlock)
+		{
+			throw bad_alloc();
+		}
 
-	for (size_t i = 0; i < poolSize, ++i)
-	{
-		unusedBlocks.push_back(&memoryBlock[i]);
+		for (size_t i = 0; i < poolSize; ++i)
+		{
+			unusedBlocks.push_back(&memoryBlock[i]);
+		}
 	}
+	
 
 	~PoolAllocator() {
 		free(memoryBlock); 

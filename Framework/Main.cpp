@@ -8,18 +8,7 @@
 #include "PlayerHealth&Coin.h"
 #include <memory>
 #include <iostream>
-
-
-void* operator new(std::size_t numBytes) {
-	std::cout << "allocating " << numBytes << " bytes of memory\n";
-	return std::malloc(numBytes);
-}
-
-void operator delete(void* memoryLocation, std::size_t numBytes) {
-	std::cout << "freeing " << numBytes << " bytes of memory\n";
-	std::free(memoryLocation);
-}
-
+#include "PoolAllocator.h"
 
 
 BaseObjects background; 
@@ -103,10 +92,10 @@ std::vector<Enemy*> Enemies()
 {
 	std::vector<Enemy*> enemyArmy;
 
-	Enemy* dynamicEnemies = new Enemy[20]; 
+	//Enemy* dynamicEnemies = new Enemy();
 	for (int i = 0; i < 20; i++)
 	{
-		Enemy* enemy = (dynamicEnemies + i); 
+		Enemy* enemy = new Enemy(); //(dynamicEnemies + i); 
 		if (enemy != nullptr)
 		{
 			enemy->LoadImg("textures/threat_left.png", screen); 
@@ -122,11 +111,11 @@ std::vector<Enemy*> Enemies()
 			enemyArmy.push_back(enemy);		
 		}
 	}
-	Enemy* enemies = new Enemy[20]; 
+	//Enemy* enemies = new Enemy[20]; 
 
 	for (int i = 0; i < 20; i++)
 	{
-		Enemy* enemy = (enemies + i);
+		Enemy* enemy = new Enemy(); //(enemies + i);
 		if (enemy != nullptr)
 		{
 			enemy->LoadImg("textures/threat_level.png", screen);
@@ -366,6 +355,7 @@ int main(int argc, char* argv[])
 		if (enemy)
 		{
 			enemy->Free(); 
+			delete enemy; 
 			enemy = nullptr;
 		}
 	}

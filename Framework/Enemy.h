@@ -1,4 +1,3 @@
-#pragma once
 
 #ifndef ENEMY_H
 #define ENEMY_H
@@ -6,6 +5,9 @@
 #include "CommonFunctions.h"
 #include "BaseObjects.h"
 #include "Bullet.h"
+#include "PoolAllocator.h"
+#include <memory>
+#include <iostream>
 
 #define ENEMY_MAX_FALL_SPEED 10
 #define ENEMY_GRAVITY_SPEED 0.8
@@ -23,6 +25,9 @@ public:
 		MOVE_IN_AREA = 1,
 
 	};
+	void* operator new(size_t numBytes);
+	void operator delete(void* memoryLocation, std::size_t numBytes);
+
 	void setXval(const float& x_val) { valX = x_val; }
 	void setYval(const float& y_val) { valY = y_val; }
 
@@ -73,6 +78,7 @@ private:
 	Input input; 
 
 	std::vector<Bullet*> BulletList;
+	static PoolAllocator<Enemy> poolSize;
 };
 
 #endif

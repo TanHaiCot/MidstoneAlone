@@ -1,17 +1,6 @@
 #include "Enemy.h"
-//#include <memory>
-//#include <iostream>
-//
-//
-//void* operator new(std::size_t numBytes) {
-//	std::cout << "allocating " << numBytes << " bytes of memory\n";
-//	return std::malloc(numBytes);
-//}
-//
-//void operator delete(void* memoryLocation, std::size_t numBytes) {
-//	std::cout << "freeing " << numBytes << " bytes of memory\n";
-//	std::free(memoryLocation);
-//}
+
+PoolAllocator<Enemy> Enemy::poolSize(100);
 
 Enemy::Enemy() 
 {
@@ -34,6 +23,16 @@ Enemy::Enemy()
 
 Enemy::~Enemy()
 {
+}
+
+void* Enemy::operator new(size_t numBytes) {
+	cout << "allocating an enemy of size " << numBytes << " bytes\n";
+	return poolSize.Allocate();
+}
+
+void Enemy::operator delete(void* memoryLocation, std::size_t numBytes) {
+	std::cout << "freeing an enemy of size " << numBytes << " bytes\n";
+	poolSize.Deallocate(memoryLocation);
 }
 
 
