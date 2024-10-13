@@ -39,7 +39,7 @@
     <ClCompile Include="Vector.cpp">
       <Filter>Source Files\Math</Filter>
     </ClCompile>
-    <ClCompile Include="Time.cpp">
+    <ClCompile Include="Timer.cpp">
       <Filter>Source Files\Visualization Handler</Filter>
     </ClCompile>
     <ClCompile Include="Window.cpp">

@@ -14,6 +14,7 @@
 #define MAX_FALL_SPEED 10
 #define PLAYER_SPEED 15
 #define PLAYER_JUMP 18
+//#define CONTROLLER_DEAD_ZONE 8000
 
 class Player : public BaseObjects
 {
@@ -30,7 +31,8 @@ public:
 
 	bool loadImage(std::string path, SDL_Renderer* screen);
 	void Show(SDL_Renderer* des);
-	void HandleInputAction(SDL_Event events, SDL_Renderer* screen);
+	void HandleInputAction(SDL_Event events, SDL_Renderer* screen, Mix_Chunk* bulletSound, Mix_Chunk* jumpSound);
+	void HandleGameControllerInput(SDL_GameController* gameController, SDL_Renderer* screen, Mix_Chunk* bulletSound, Mix_Chunk* jumpSound);
 	void setClip(); 
 
 	void Play(Map& mapData);
@@ -75,6 +77,9 @@ private:
 	int mapY;  
 
 	int reviveTime; 
+
+	bool isUsingController; 
+	float gameControllerDeadzone; 
 };
 
 #endif

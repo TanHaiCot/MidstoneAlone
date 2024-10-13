@@ -1,4 +1,5 @@
 #include "Player.h"
+#include <iostream>
 
 
 Player::Player()
@@ -21,6 +22,8 @@ Player::Player()
 	mapY = 0;
 	reviveTime = 0;
 	collectedCoin = 0;
+	isUsingController = false; 
+	gameControllerDeadzone = 8000.0f;
 }
 
 
@@ -139,7 +142,7 @@ void Player::Show(SDL_Renderer* des)
 }
 
 
-void Player::HandleInputAction(SDL_Event events, SDL_Renderer* screen)
+void Player::HandleInputAction(SDL_Event events, SDL_Renderer* screen, Mix_Chunk* bulletSound, Mix_Chunk* jumpSound)
 {
 	if (events.type == SDL_KEYDOWN)
 	{
@@ -187,12 +190,16 @@ void Player::HandleInputAction(SDL_Event events, SDL_Renderer* screen)
 	{
 		if (events.button.button == SDL_BUTTON_RIGHT)
 		{
-			inputType.jump = 1; 
+			if (onGround) {
+				inputType.jump = 1;
+				Mix_PlayChannel(-1, jumpSound, 0);
+			}
 		}
 		else if (events.button.button == SDL_BUTTON_LEFT)
 		{
 			Bullet* bullet = new Bullet(); 
 			bullet->loadImage("textures/pellett.png", screen);
+			Mix_PlayChannel(-1, bulletSound, 0);
 
 			if (movementStatus == WALK_LEFT)
 			{
@@ -210,6 +217,97 @@ void Player::HandleInputAction(SDL_Event events, SDL_Renderer* screen)
 
 			BulletMag.push_back(bullet);
 		}
+	}
+
+	if (events.type == SDL_CONTROLLERDEVICEADDED)
+	{
+		if (SDL_IsGameController(events.cdevice.which))
+		{
+			SDL_GameController* controller = SDL_GameControllerOpen(events.cdevice.which); 
+			if (controller)
+			{
+				isUsingController = true; 
+				std::cout << "Controller is connected" << std::endl;
+			}
+		}
+	}
+	else if (events.type == SDL_CONTROLLERDEVICEREMOVED)
+	{
+		isUsingController = false; 
+		std::cout << "Controller is disconnected" << std::endl;
+	}
+}
+
+
+void Player::HandleGameControllerInput(SDL_GameController* gameController, SDL_Renderer* screen, Mix_Chunk* bulletSound, Mix_Chunk* jumpSound)
+{
+	if (!isUsingController || !gameController) return;
+
+	// Handle left/right movement
+	float xAxis = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_LEFTX);
+	if (fabs(xAxis) > gameControllerDeadzone)
+	{
+		if (xAxis > 0)
+		{
+			movementStatus = WALK_RIGHT;
+			inputType.right = 1;
+			inputType.left = 0;
+			UpdatePlayerImage(screen);
+		}
+		else
+		{
+			movementStatus = WALK_LEFT;
+			inputType.left = 1;
+			inputType.right = 0;
+			UpdatePlayerImage(screen);
+		}
+
+		x_value = xAxis * PLAYER_SPEED;
+	}
+	if(fabs(xAxis) <= gameControllerDeadzone)
+	{
+		inputType.right = 0;
+		inputType.left = 0;
+		x_value = 0;
+	}
+
+
+	//Handle jump
+	if (SDL_GameControllerGetButton(gameController, SDL_CONTROLLER_BUTTON_A) == 1)
+	{
+		std::cout << "Jump button pressed" << std::endl; 
+		if (onGround)
+		{
+			inputType.jump = 1; 
+			y_value = -PLAYER_JUMP;
+			Mix_PlayChannel(-1, jumpSound, 0); 
+			onGround = false;
+		}
+	}
+
+
+	//Handle shooting 
+	if (SDL_GameControllerGetButton(gameController, SDL_CONTROLLER_BUTTON_B) == 1)
+	{
+		Bullet* bullet = new Bullet();
+		bullet->loadImage("textures/pellett.png", screen);
+		Mix_PlayChannel(-1, bulletSound, 0);
+
+		if (movementStatus == WALK_LEFT)
+		{
+			bullet->setBulletDir(Bullet::LEFT_DIR);
+			bullet->SetRect(this->rect.x, rect.y + heightFrame * 0.25);
+		}
+		else
+		{
+			bullet->setBulletDir(Bullet::RIGHT_DIR);
+			bullet->SetRect(this->rect.x + widthFrame - 20, rect.y + heightFrame * 0.25);
+		}
+
+		bullet->setX(20);
+		bullet->setIsMove(true);
+
+		BulletMag.push_back(bullet);
 	}
 }
 

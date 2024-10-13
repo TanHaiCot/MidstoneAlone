@@ -52,6 +52,7 @@ public:
 		}
 		T* object = unusedBlocks.back();
 		unusedBlocks.pop_back();
+		cout << "[PoolAllocator] Allocating from pool. Remaining slots: " << unusedBlocks.size() << "\n";
 		return object; 
 	}
 

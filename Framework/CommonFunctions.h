@@ -15,6 +15,10 @@ static SDL_Window* window = nullptr;
 static SDL_Renderer* screen = nullptr;
 static SDL_Event event;
 
+static Mix_Chunk* bulletSound; 
+static Mix_Chunk* jumpSound; 
+static Mix_Music* backgroundMusic; 
+
 //Screen
 const int FRAME_PER_SECOND = 25;
 const int SCREEN_WIDTH = 1280; 
