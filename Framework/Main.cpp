@@ -4,7 +4,7 @@
 #include "Player.h" 
 #include "Timer.h"
 #include "Enemy.h"
-#include "Text.h"
+//#include "Text.h"
 #include "PlayerHealth&Coin.h"
 #include "PoolAllocator.h"
 #include <iostream>
@@ -17,7 +17,7 @@
 #include <SDL_mixer.h>
 
 BaseObjects background; 
-TTF_Font* font = nullptr; 
+//TTF_Font* font = nullptr; 
 std::vector<Enemy*> enemyArmy;
 std::mutex enemyMutex; 
 //std::atomic<bool> assetLoaded(false); 
@@ -30,7 +30,10 @@ bool InitData()
 	bool success = true; 
 	int ret = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
 	if (ret < 0)
-		return false; 
+	{
+		std::cout << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
+		return false;
+	}
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
@@ -41,6 +44,7 @@ bool InitData()
 	 
 	if (window == nullptr)
 	{
+		std::cout << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
 		success = false; 
 	}
 	else
@@ -48,26 +52,29 @@ bool InitData()
 		screen = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 		if (screen == nullptr)
 		{
+			std::cout << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
 			success = false; 
 		}
 		else
 		{
 			SDL_SetRenderDrawColor(screen, RENDER_DRAW_COLOR, RENDER_DRAW_COLOR, RENDER_DRAW_COLOR, RENDER_DRAW_COLOR);
 			int imgFlags = IMG_INIT_PNG; 
-			if (!(IMG_Init(imgFlags) && imgFlags))
-				success = false; 
+			if (!(IMG_Init(imgFlags) & imgFlags)) {
+				std::cout << "SDL_image could not initialize! SDL_image Error: " << IMG_GetError() << std::endl;
+				success = false;
+			}
 		}
 
-		if (TTF_Init() == -1)
+		/*if (TTF_Init() == -1)
 		{
 			success = false; 
-		}
+		}*/
 
-		font = TTF_OpenFont("Font/dlxfont_.ttf", 15);
+		/*font = TTF_OpenFont("Font/dlxfont_.ttf", 15);
 		if (font == nullptr)
 		{
 			success = false; 
-		}
+		}*/
 	}
 
 	for (int i = 0; i < SDL_NumJoysticks(); ++i)
@@ -79,11 +86,16 @@ bool InitData()
 			{
 				break;
 			}
+			else
+			{
+				std::cout << "Could not open game controller! SDL_Error: " << SDL_GetError() << std::endl;
+			}
 		}
 	}
 
 	if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
 	{
+		std::cout << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << std::endl;
 		success = false;
 	}
 
@@ -91,12 +103,14 @@ bool InitData()
 	jumpSound = Mix_LoadWAV("game resource/beep_.wav");
 	if (bulletSound == nullptr || jumpSound == nullptr)
 	{
+		std::cout << "Failed to load sound effects! SDL_mixer Error: " << Mix_GetError() << std::endl;
 		success = false;
 	}
 
 	backgroundMusic = Mix_LoadMUS("game resource/05. Loonboon.mp3"); 
 	if (backgroundMusic == nullptr)
 	{
+		std::cout << "Failed to load background music! SDL_mixer Error: " << Mix_GetError() << std::endl;
 		success = false; 
 	}
 
@@ -227,7 +241,7 @@ int main(int argc, char* argv[])
 	int DieTurn = 0;
 
 	//Time text
-	Text gameTime;
+	/*Text gameTime;
 	gameTime.SetColor(Text::WHITE_TEXT);
 
 	Text gameMark;
@@ -238,7 +252,7 @@ int main(int argc, char* argv[])
 	gameCoin.SetColor(Text::WHITE_TEXT);
 
 	Text gameFPS;
-	gameFPS.SetColor(Text::WHITE_TEXT);
+	gameFPS.SetColor(Text::WHITE_TEXT);*/
 
 	Timer gameTimer;
 	Timer frameTimer;
@@ -363,7 +377,7 @@ int main(int argc, char* argv[])
 
 							if (Collision)
 							{
-								markValue += 100;
+								//markValue += 100;
 								player.RemoveBullet(i);
 								enemy->Free();
 								enemyArmy.erase(enemyArmy.begin() + j);
@@ -389,24 +403,24 @@ int main(int argc, char* argv[])
 		double countdownTime = 300.0 * 1000.0 - gameTimeValue;
 		//std::string stringTime = "Time: ";
 		//Uint32 TimeValue = SDL_GetTicks() / 1000; 
-		if (countdownTime <= 0)
-		{
-			if (MessageBox(nullptr, L"GAME OVER", L"Info", MB_OK | MB_ICONSTOP) == IDOK)
-			{
-				Close();
-				SDL_Quit();
-				return 0;
-			}
-		}
-		else
-		{
-			std::string stringTime = "Time" + std::to_string(static_cast<int>(countdownTime));
-			gameTime.SetText(stringTime);
-			gameTime.LoadFromRenderText(font, screen);
-			gameTime.RenderText(screen, SCREEN_WIDTH - 200, 15);
-		}
+		//if (countdownTime <= 0)
+		//{
+		//	if (MessageBox(nullptr, L"GAME OVER", L"Info", MB_OK | MB_ICONSTOP) == IDOK)
+		//	{
+		//		Close();
+		//		SDL_Quit();
+		//		//return 0;
+		//	}
+		//}
+		//else
+		//{
+		//	std::string stringTime = "Time" + std::to_string(static_cast<int>(countdownTime));
+		//	gameTime.SetText(stringTime);
+		//	gameTime.LoadFromRenderText(font, screen);
+		//	gameTime.RenderText(screen, SCREEN_WIDTH - 200, 15);
+		//}
 
-		std::string stringMark = "Mark: " + std::to_string(markValue);
+		/*std::string stringMark = "Mark: " + std::to_string(markValue);
 		gameMark.SetText(stringMark);
 		gameMark.LoadFromRenderText(font, screen);
 		gameMark.RenderText(screen, SCREEN_WIDTH * 0.5 - 50, 15);
@@ -415,13 +429,13 @@ int main(int argc, char* argv[])
 		std::string stringCoin = std::to_string(coinCount);
 		gameCoin.SetText(stringCoin);
 		gameCoin.LoadFromRenderText(font, screen);
-		gameCoin.RenderText(screen, SCREEN_WIDTH * 0.5 - 250, 15);
+		gameCoin.RenderText(screen, SCREEN_WIDTH * 0.5 - 250, 15);*/
 
 		//int realTime = timer.getTick();
-		std::string StringFPS = std::to_string(static_cast<int>(fps));
+	/*	std::string StringFPS = std::to_string(static_cast<int>(fps));
 		gameFPS.SetText(StringFPS);
 		gameFPS.LoadFromRenderText(font, screen);
-		gameFPS.RenderText(screen, 10, 15);
+		gameFPS.RenderText(screen, 10, 15);*/
 
 		SDL_RenderPresent(screen);
 
@@ -446,6 +460,7 @@ int main(int argc, char* argv[])
 
 	Close(); 
 	SDL_GameControllerClose(gameController);
+	SDL_Quit();
 	std::cout << "Program ended" << std::endl;
 	return 0; 
 }

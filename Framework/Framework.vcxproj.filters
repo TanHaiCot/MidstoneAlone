@@ -48,9 +48,6 @@
     <ClCompile Include="Body.cpp">
       <Filter>Source Files\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="CommonFuntions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BaseObjects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
