@@ -4,7 +4,6 @@
 #include "Player.h" 
 #include "Timer.h"
 #include "Enemy.h"
-//#include "Text.h"
 #include "PlayerHealth&Coin.h"
 #include "PoolAllocator.h"
 #include <iostream>
@@ -15,25 +14,119 @@
 #include <condition_variable>
 #include <chrono>
 #include <SDL_mixer.h>
+#include "imgui.h"
+//#include "imgui-master/backends/imgui_impl_sdl2.h"
+//#include "imgui-master/backends/imgui_impl_sdlrenderer2.h"
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_sdlrenderer2.h"
+
 
 BaseObjects background; 
-//TTF_Font* font = nullptr; 
 std::vector<Enemy*> enemyArmy;
 std::mutex enemyMutex; 
 //std::atomic<bool> assetLoaded(false); 
 bool enemiesLoaded = false; 
 std::condition_variable cv; 
 SDL_GameController* gameController = nullptr; 
+int menuSelection = 0; 
+bool showOptions = false;
+Uint32 lastInputTime = 0;
+
+enum class GameState {
+	MENU,
+	GAMEPLAY,
+	EXIT
+};
+
+void RenderMenu(GameState& gameState, bool& options, int menuSelection) {
+	ImGui_ImplSDLRenderer2_NewFrame(); 
+	ImGui_ImplSDL2_NewFrame();
+	ImGui::NewFrame(); 
+
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
+
+	// Calculate window position to center it
+	ImVec2 window_size = ImVec2(300, 200);
+	ImVec2 window_pos = ImVec2((SCREEN_WIDTH - window_size.x) * 0.5f,
+		(SCREEN_HEIGHT - window_size.y) * 0.5f);
+	ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always);
+	ImGui::SetNextWindowSize(window_size, ImGuiCond_Always);
+
+	ImGui::Begin("Main Menu", nullptr, window_flags);
+	ImVec4 highlightColor = ImVec4(0.4f, 0.7f, 0.9f, 1.0f);
+	
+	if (menuSelection == 0) {
+		ImGui::PushStyleColor(ImGuiCol_Button, highlightColor);
+	}
+	if (ImGui::Button("Start Game", ImVec2(280, 40))) {
+		gameState = GameState::GAMEPLAY;
+	}
+	if (menuSelection == 0)
+		ImGui::PopStyleColor();
+	ImGui::Spacing();
+
+	if (menuSelection == 1) {
+		ImGui::PushStyleColor(ImGuiCol_Button, highlightColor);
+	}
+	if (ImGui::Button("Options", ImVec2(280, 40))) {
+		showOptions = true;
+	}
+	if (menuSelection == 1)
+		ImGui::PopStyleColor();
+	ImGui::Spacing();
+
+	if (menuSelection == 2) {
+		ImGui::PushStyleColor(ImGuiCol_Button, highlightColor);
+	}	
+	if (ImGui::Button("Quit", ImVec2(280, 40))) {
+		gameState = GameState::EXIT;
+	}
+	if (menuSelection == 2	)
+		ImGui::PopStyleColor();
+
+	ImGui::End();
+
+	if (showOptions) {
+		ImGui::Begin("Options", &showOptions, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+
+		static float volume = 0.5f;
+		if (ImGui::SliderFloat("Volume", &volume, 0.0f, 1.0f)) {
+			Mix_VolumeMusic(static_cast<int>(volume * MIX_MAX_VOLUME));
+		}
+
+		static bool fullscreen = false;
+		if (ImGui::Checkbox("Fullscreen", &fullscreen)) {
+			if (fullscreen) {
+				SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+			}
+			else {
+				SDL_SetWindowFullscreen(window, 0);
+			}
+		}
+
+		if (ImGui::Button("Close", ImVec2(280, 40))) {
+			showOptions = false;
+		}
+
+		ImGui::End();
+	}
+
+	ImGui::Render();	
+	ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), screen);
+}
 
 bool InitData()
 {
 	bool success = true; 
-	int ret = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
+	int ret = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK);
 	if (ret < 0)
 	{
 		std::cout << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
 		return false;
 	}
+
+	SDL_GameControllerEventState(SDL_ENABLE); 
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
@@ -64,17 +157,6 @@ bool InitData()
 				success = false;
 			}
 		}
-
-		/*if (TTF_Init() == -1)
-		{
-			success = false; 
-		}*/
-
-		/*font = TTF_OpenFont("Font/dlxfont_.ttf", 15);
-		if (font == nullptr)
-		{
-			success = false; 
-		}*/
 	}
 
 	for (int i = 0; i < SDL_NumJoysticks(); ++i)
@@ -84,13 +166,19 @@ bool InitData()
 			gameController = SDL_GameControllerOpen(i);
 			if (gameController)
 			{
+				std::cout << "Game controller " << i << " connected: " << SDL_GameControllerName(gameController) << std::endl;
 				break;
 			}
 			else
 			{
-				std::cout << "Could not open game controller! SDL_Error: " << SDL_GetError() << std::endl;
+				std::cout << "Could not open game controller " << i << "! SDL_Error: " << SDL_GetError() << std::endl;
 			}
 		}
+	}
+
+	if (!gameController)
+	{
+		std::cout << "No game controller detected." << std::endl;
 	}
 
 	if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
@@ -114,7 +202,24 @@ bool InitData()
 		success = false; 
 	}
 
-	return success; 
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+	ImGui::StyleColorsDark(); // or ImGui::StyleColorsClassic();
+
+	// Initialize ImGui SDL2 and SDL_Renderer bindings
+	if (!ImGui_ImplSDL2_InitForSDLRenderer(window, screen)) {
+		std::cout << "Failed to initialize ImGui SDL2" << std::endl;
+		success = false;
+	}
+	if (!ImGui_ImplSDLRenderer2_Init(screen)) {
+		std::cout << "Failed to initialize ImGui SDL_Renderer" << std::endl;
+		success = false;
+	}
+
+	return success;
+
 }
 
 
@@ -147,6 +252,10 @@ void Close()
 	Mix_FreeMusic(backgroundMusic); 
 	backgroundMusic = nullptr;
 	Mix_CloseAudio(); 
+
+	ImGui_ImplSDLRenderer2_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
+	ImGui::DestroyContext();
 }
 
 void loadEnemies(std::vector<Enemy*> &enemyArmy)
@@ -202,24 +311,38 @@ void loadEnemies(std::vector<Enemy*> &enemyArmy)
 
 int main(int argc, char* argv[])
 {
+	Timer profilingTimer; 
+
+	profilingTimer.Start(); 
 	if (InitData() == false)
 	{
 		return -1;
 	}
+	double initDataTime = profilingTimer.GetElapsedMilliseconds(); 
+	std::cout << "InitData() took: " << initDataTime << " ms" << std::endl; 
 
+
+	profilingTimer.Start();
 	if (LoadBackground() == false) {
 		return -1;
 	}
+	double loadBackgroundTime = profilingTimer.GetElapsedMilliseconds();
+	std::cout << "LoadBackground() took: " << loadBackgroundTime << " ms" << std::endl;
+
 
 	if (Mix_PlayMusic(backgroundMusic, -1) == -1)
 	{
 		std::cout << "Failed to play background music! SDL_mixer Error: " << Mix_GetError() << std::endl;
 	}
 
+
 	GameMap gameMap;
+	profilingTimer.Start();
 	gameMap.loadMap("map/map01.dat");
 	gameMap.loadTiles(screen);
-	std::cout << "Game map loaded" << std::endl;
+	double mapLoadTime = profilingTimer.GetElapsedMilliseconds();
+	std::cout << "Loading and drawing map took: " << mapLoadTime << " ms" << std::endl;
+	//std::cout << "Game map loaded" << std::endl;
 
 	Player player;
 	player.loadImage("player sprite/player_right.png", screen);
@@ -232,27 +355,16 @@ int main(int argc, char* argv[])
 	playerCoin.Init(screen);
 
 	std::cout << "Starting enemy thread" << std::endl;
+	profilingTimer.Start();
 	std::thread enemyThread(loadEnemies, std::ref(enemyArmy));
 	{
 		std::unique_lock<std::mutex> lock(enemyMutex);
 		cv.wait(lock, [] {return enemiesLoaded; });
 	}
+	double loadEnemiesTime = profilingTimer.GetElapsedMilliseconds();
+	std::cout << "loadEnemies() took: " << loadEnemiesTime << " ms" << std::endl;
 
 	int DieTurn = 0;
-
-	//Time text
-	/*Text gameTime;
-	gameTime.SetColor(Text::WHITE_TEXT);
-
-	Text gameMark;
-	gameMark.SetColor(Text::WHITE_TEXT);
-	UINT markValue = 0;
-
-	Text gameCoin;
-	gameCoin.SetColor(Text::WHITE_TEXT);
-
-	Text gameFPS;
-	gameFPS.SetColor(Text::WHITE_TEXT);*/
 
 	Timer gameTimer;
 	Timer frameTimer;
@@ -260,6 +372,8 @@ int main(int argc, char* argv[])
 	gameTimer.Start();
 
 	bool isQuit = false;
+	GameState gameState = GameState::MENU;
+
 	while (!isQuit)
 	{
 		frameTimer.Start();
@@ -268,84 +382,183 @@ int main(int argc, char* argv[])
 
 		while (SDL_PollEvent(&event) != 0)
 		{
+			ImGui_ImplSDL2_ProcessEvent(&event);
+
 			if (event.type == SDL_QUIT)
 				isQuit = true;
 
-
-			player.HandleInputAction(event, screen, bulletSound, jumpSound);
-			if (SDL_GameControllerGetAttached(gameController))
+			if (event.type == SDL_CONTROLLERDEVICEADDED)
 			{
-				controllerActivated = true;
-				player.HandleGameControllerInput(gameController, screen, bulletSound, jumpSound);
+				if (!gameController)
+				{
+					gameController = SDL_GameControllerOpen(event.cdevice.which);
+					if (gameController)
+					{
+						std::cout << "Controller connected: " << SDL_GameControllerName(gameController) << std::endl;
+					}
+				}
+			}
+			else if (event.type == SDL_CONTROLLERDEVICEREMOVED)
+			{
+				if (gameController && event.cdevice.which == SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(gameController)))
+				{
+					SDL_GameControllerClose(gameController);
+					gameController = nullptr; 
+					std::cout << "Controller disconnected." << std::endl;
+				}
+			}
+
+			if (gameState == GameState::GAMEPLAY) {
+				player.HandleInputAction(event, screen, bulletSound, jumpSound);
+			}
+		}
+
+		if (gameState == GameState::GAMEPLAY) {
+			if (gameController && SDL_GameControllerGetAttached(gameController))
+			{
+				if (gameController) {
+					std::cout << "gameController is valid." << std::endl;
+					if (SDL_GameControllerGetAttached(gameController)) {
+						player.HandleGameControllerInput(gameController, screen, bulletSound, jumpSound);
+					}
+					else {
+						std::cout << "Controller is not attached during gameplay." << std::endl;
+					}
+				}
+				else {
+					std::cout << "gameController is nullptr." << std::endl;
+				}
+				
+				//controllerActivated = true;
+				
+			}
+		}
+		
+		if (gameState == GameState::MENU && gameController)
+		{
+
+			Uint32 currentTime = SDL_GetTicks();
+			if (currentTime - lastInputTime > 200) // debounce time in ms
+			{
+				// Handle D-pad or left stick for navigation
+				Sint16 leftY = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_LEFTY);
+				const int DEADZONE = 8000;
+
+				if (leftY < -DEADZONE)
+				{
+					menuSelection--;
+					if (menuSelection < 0)
+						menuSelection = 2;
+					std::cout << "Menu Selection: " << menuSelection << std::endl;
+					lastInputTime = currentTime;
+				}
+				else if (leftY > DEADZONE)
+				{
+					menuSelection++;
+					if (menuSelection > 2)
+						menuSelection = 0;
+					std::cout << "Menu Selection: " << menuSelection << std::endl;
+					lastInputTime = currentTime;
+				}
+			}
+
+			if (SDL_GameControllerGetButton(gameController, SDL_CONTROLLER_BUTTON_A))
+			{
+				Uint32 currentTime = SDL_GetTicks(); 
+				// To prevent multiple triggers, check if enough time has passed
+				if (currentTime - lastInputTime > 200)
+				{
+					std::cout << "A button pressed on menuSelection: " << menuSelection << std::endl;
+					if (menuSelection == 0)
+					{
+						gameState = GameState::GAMEPLAY;
+					}
+					else if (menuSelection == 1)
+					{
+						showOptions = true;
+					}
+					else if (menuSelection == 2)
+					{
+						isQuit = true;
+						exit(0);
+					}
+					lastInputTime = currentTime;
+				}
 			}
 		}
 
 		SDL_SetRenderDrawColor(screen, RENDER_DRAW_COLOR, RENDER_DRAW_COLOR, RENDER_DRAW_COLOR, RENDER_DRAW_COLOR);
 		SDL_RenderClear(screen);
 
-		background.Render(screen, nullptr);
+		if (gameState == GameState::MENU) {
+			RenderMenu(gameState, showOptions, menuSelection);
+		}
 
-		Map mapData = gameMap.getMap();
+		else if (gameState == GameState::GAMEPLAY) {
+			background.Render(screen, nullptr);
 
-		player.HandleBullet(screen);
-		player.setMapXY(mapData.start_x, mapData.start_y);
-		player.Play(mapData);
-		player.Show(screen);
+			Map mapData = gameMap.getMap();
+
+			player.HandleBullet(screen);
+			player.setMapXY(mapData.start_x, mapData.start_y);
+			player.Play(mapData);
+			player.Show(screen);
 
 
-		gameMap.setMap(mapData);
-		gameMap.drawMap(screen);
+			gameMap.setMap(mapData);
+			gameMap.drawMap(screen);
 
-		playerHealth.Show(screen);
+			playerHealth.Show(screen);
 
-		playerCoin.Show(screen);
-		playerCoin.SetPos(SCREEN_WIDTH * 0.5 - 300, 8);
+			playerCoin.Show(screen);
+			playerCoin.SetPos(SCREEN_WIDTH * 0.5 - 300, 8);
 
-		{
-			std::lock_guard<std::mutex> lock(enemyMutex);
-			for (int i = 0; i < enemyArmy.size(); i++)
 			{
-				Enemy* enemy = enemyArmy.at(i);
-				if (enemy != nullptr)
+				std::lock_guard<std::mutex> lock(enemyMutex);
+				for (int i = 0; i < enemyArmy.size(); i++)
 				{
-					enemy->SetMapXY(mapData.start_x, mapData.start_y);
-					enemy->ImpMoveType(screen);
-					enemy->Action(mapData);
-					enemy->CreateBullet(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-					enemy->Show(screen);
-
-					SDL_Rect playerRect = player.GetRectFrame();
-					bool Collision1 = false;
-					std::vector<Bullet*> Bullet_List = enemy->GetBulletList();
-					for (int b = 0; b < Bullet_List.size(); ++b)
+					Enemy* enemy = enemyArmy.at(i);
+					if (enemy != nullptr)
 					{
-						Bullet* bullet = Bullet_List.at(b);
-						if (bullet)
+						enemy->SetMapXY(mapData.start_x, mapData.start_y);
+						enemy->ImpMoveType(screen);
+						enemy->Action(mapData);
+						enemy->CreateBullet(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
+						enemy->Show(screen);
+
+						SDL_Rect playerRect = player.GetRectFrame();
+						bool Collision1 = false;
+						std::vector<Bullet*> Bullet_List = enemy->GetBulletList();
+						for (int b = 0; b < Bullet_List.size(); ++b)
 						{
-							Collision1 = SDLCommonFunctions::CheckCollision(bullet->GetRect(), playerRect);
-							if (Collision1)
+							Bullet* bullet = Bullet_List.at(b);
+							if (bullet)
 							{
-								//enemy->RemoveBullet(b);
-								break;
+								Collision1 = SDLCommonFunctions::CheckCollision(bullet->GetRect(), playerRect);
+								if (Collision1)
+								{
+									//enemy->RemoveBullet(b);
+									break;
+								}
 							}
 						}
-					}
 
 
-					SDL_Rect enemyRect = enemy->GetRectFrame();
-					bool Collision2 = SDLCommonFunctions::CheckCollision(playerRect, enemyRect);
+						SDL_Rect enemyRect = enemy->GetRectFrame();
+						bool Collision2 = SDLCommonFunctions::CheckCollision(playerRect, enemyRect);
 
-					if (Collision1 || Collision2)
-					{
-						DieTurn++;
-						if (DieTurn <= 3)
+						if (Collision1 || Collision2)
 						{
-							player.SetRect(0, 0);
-							player.SetReviveTime(60);
-							playerHealth.Decrease();
-							playerHealth.Render(screen);
-							SDL_Delay(1000);
-							continue;
+							DieTurn++;
+							if (DieTurn <= 3)
+							{
+								player.SetRect(0, 0);
+								player.SetReviveTime(60);
+								playerHealth.Decrease();
+								playerHealth.Render(screen);
+								SDL_Delay(1000);
+								continue;
+							}
 						}
 					}
 				}
@@ -390,7 +603,7 @@ int main(int argc, char* argv[])
 
 		double frameTime = frameTimer.GetElapsedMilliseconds();
 		double fps = 1000.0 / frameTime;
-		std::cout << "Frame Time: " << frameTime << " ms, FPS: " << fps << std::endl;
+		//std::cout << "Frame Time: " << frameTime << " ms, FPS: " << fps << std::endl;
 
 		double targetFrameTime = 1000.0 / FRAME_PER_SECOND; //ms
 		if (frameTime < targetFrameTime)
@@ -401,48 +614,11 @@ int main(int argc, char* argv[])
 		//Show game time 
 		double gameTimeValue = gameTimer.GetElapsedMilliseconds();
 		double countdownTime = 300.0 * 1000.0 - gameTimeValue;
-		//std::string stringTime = "Time: ";
-		//Uint32 TimeValue = SDL_GetTicks() / 1000; 
-		//if (countdownTime <= 0)
-		//{
-		//	if (MessageBox(nullptr, L"GAME OVER", L"Info", MB_OK | MB_ICONSTOP) == IDOK)
-		//	{
-		//		Close();
-		//		SDL_Quit();
-		//		//return 0;
-		//	}
-		//}
-		//else
-		//{
-		//	std::string stringTime = "Time" + std::to_string(static_cast<int>(countdownTime));
-		//	gameTime.SetText(stringTime);
-		//	gameTime.LoadFromRenderText(font, screen);
-		//	gameTime.RenderText(screen, SCREEN_WIDTH - 200, 15);
-		//}
-
-		/*std::string stringMark = "Mark: " + std::to_string(markValue);
-		gameMark.SetText(stringMark);
-		gameMark.LoadFromRenderText(font, screen);
-		gameMark.RenderText(screen, SCREEN_WIDTH * 0.5 - 50, 15);
-
-		int coinCount = player.GetCoinCount();
-		std::string stringCoin = std::to_string(coinCount);
-		gameCoin.SetText(stringCoin);
-		gameCoin.LoadFromRenderText(font, screen);
-		gameCoin.RenderText(screen, SCREEN_WIDTH * 0.5 - 250, 15);*/
-
-		//int realTime = timer.getTick();
-	/*	std::string StringFPS = std::to_string(static_cast<int>(fps));
-		gameFPS.SetText(StringFPS);
-		gameFPS.LoadFromRenderText(font, screen);
-		gameFPS.RenderText(screen, 10, 15);*/
-
+		
 		SDL_RenderPresent(screen);
 
 	}
 
-	
-	
 	enemyThread.join(); 
 
 	for (int i = 0; i < enemyArmy.size(); i++)

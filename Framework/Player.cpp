@@ -22,7 +22,7 @@ Player::Player()
 	mapY = 0;
 	reviveTime = 0;
 	collectedCoin = 0;
-	isUsingController = false; 
+	//isUsingController = false; 
 	gameControllerDeadzone = 8000.0f;
 }
 
@@ -218,34 +218,18 @@ void Player::HandleInputAction(SDL_Event events, SDL_Renderer* screen, Mix_Chunk
 			BulletMag.push_back(bullet);
 		}
 	}
-
-	if (events.type == SDL_CONTROLLERDEVICEADDED)
-	{
-		if (SDL_IsGameController(events.cdevice.which))
-		{
-			SDL_GameController* controller = SDL_GameControllerOpen(events.cdevice.which); 
-			if (controller)
-			{
-				isUsingController = true; 
-				std::cout << "Controller is connected" << std::endl;
-			}
-		}
-	}
-	else if (events.type == SDL_CONTROLLERDEVICEREMOVED)
-	{
-		isUsingController = false; 
-		std::cout << "Controller is disconnected" << std::endl;
-	}
 }
 
 
 void Player::HandleGameControllerInput(SDL_GameController* gameController, SDL_Renderer* screen, Mix_Chunk* bulletSound, Mix_Chunk* jumpSound)
 {
-	if (!isUsingController || !gameController) return;
+	std::cout << "HandleGameControllerInput called" << std::endl;
+	if (!gameController) return;
 
 	// Handle left/right movement
-	float xAxis = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_LEFTX);
-	if (fabs(xAxis) > gameControllerDeadzone)
+	Sint16 xAxis = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_LEFTX);
+	std::cout << "xAxis: " << xAxis << std::endl;
+	if (abs(xAxis) > gameControllerDeadzone)
 	{
 		if (xAxis > 0)
 		{
@@ -253,6 +237,7 @@ void Player::HandleGameControllerInput(SDL_GameController* gameController, SDL_R
 			inputType.right = 1;
 			inputType.left = 0;
 			UpdatePlayerImage(screen);
+			//x_value = PLAYER_SPEED; 
 		}
 		else
 		{
@@ -260,34 +245,42 @@ void Player::HandleGameControllerInput(SDL_GameController* gameController, SDL_R
 			inputType.left = 1;
 			inputType.right = 0;
 			UpdatePlayerImage(screen);
+			//x_value = -PLAYER_SPEED;
 		}
 
-		x_value = xAxis * PLAYER_SPEED;
+		//x_value = xAxis * PLAYER_SPEED;
 	}
-	if(fabs(xAxis) <= gameControllerDeadzone)
+	else
 	{
 		inputType.right = 0;
 		inputType.left = 0;
-		x_value = 0;
+		//x_value = 0;
 	}
 
 
 	//Handle jump
-	if (SDL_GameControllerGetButton(gameController, SDL_CONTROLLER_BUTTON_A) == 1)
+	bool jumpPressed = (SDL_GameControllerGetButton(gameController, SDL_CONTROLLER_BUTTON_A) == 1);
+	std::cout << "Jump button state: " << jumpPressed << std::endl;
+	if (jumpPressed && !jumButtonPressed)
 	{
 		std::cout << "Jump button pressed" << std::endl; 
 		if (onGround)
 		{
 			inputType.jump = 1; 
-			y_value = -PLAYER_JUMP;
+			//y_value = -PLAYER_JUMP;
 			Mix_PlayChannel(-1, jumpSound, 0); 
-			onGround = false;
+			//onGround = false;
 		}
+		jumButtonPressed = true;
+	}
+	if (!jumpPressed) {
+		jumButtonPressed = false; 
 	}
 
 
 	//Handle shooting 
-	if (SDL_GameControllerGetButton(gameController, SDL_CONTROLLER_BUTTON_B) == 1)
+	bool shootPressed = (SDL_GameControllerGetButton(gameController, SDL_CONTROLLER_BUTTON_B) == 1);
+	if(shootPressed && !shootButtonPressed)
 	{
 		Bullet* bullet = new Bullet();
 		bullet->loadImage("textures/pellett.png", screen);
@@ -308,6 +301,10 @@ void Player::HandleGameControllerInput(SDL_GameController* gameController, SDL_R
 		bullet->setIsMove(true);
 
 		BulletMag.push_back(bullet);
+		shootButtonPressed = true; 
+	}
+	if (!shootPressed) {
+		shootButtonPressed = false; 
 	}
 }
 
@@ -580,6 +577,11 @@ void Player::CoinIncrease()
 {
 	collectedCoin++; 
 }
+
+//void Player::SetController(bool value)
+//{
+//	isUsingController = value; 
+//}
 
 
 void Player::UpdatePlayerImage(SDL_Renderer* des)
